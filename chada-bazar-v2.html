@@ -1,0 +1,779 @@
+<title>চাঁদা বাজার ২.০</title>
+<meta name="description" content="ভাই আপনার পাশে আছে, পকেটের ভেতরে। একটি ব্যঙ্গাত্মক অ্যাপ।">
+<meta property="og:title" content="চাঁদা বাজার ২.০">
+<meta property="og:description" content="নিজের নামে চাঁদার রসিদ বানাও, বন্ধুকে নোটিশ পাঠাও, ভাইয়ের কল কাটো।">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: street-banner masthead + sticky tab rail of "counters"; each tab is one screenshot-ready card on newsprint */
+:root{
+  --paper:#F2ECD9; --surface:#FFFBEF; --ink:#1C1A16; --muted:#5E5847; --line:#D8CFB4;
+  --red:#C8102E; --red-ink:#FFFFFF; --green:#0B5D3B; --green-ink:#F2ECD9;
+  --yellow:#F7C600; --yellow-ink:#1C1A16; --stamp:#B3122B;
+  --f-display:"Galada","Hind Siliguri","Noto Sans Bengali",cursive;
+  --f-body:"Hind Siliguri","Noto Sans Bengali","Nirmala UI",system-ui,sans-serif;
+  --f-mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#16140F; --surface:#211E17; --ink:#F2ECD9; --muted:#B4AB92; --line:#3A3528;
+  --red:#E8364F; --red-ink:#FFFFFF; --green:#2E9C6A; --green-ink:#0F0E0A;
+  --yellow:#FFD23F; --yellow-ink:#16140F; --stamp:#FF5A6E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#16140F; --surface:#211E17; --ink:#F2ECD9; --muted:#B4AB92; --line:#3A3528;
+  --red:#E8364F; --red-ink:#FFFFFF; --green:#2E9C6A; --green-ink:#0F0E0A;
+  --yellow:#FFD23F; --yellow-ink:#16140F; --stamp:#FF5A6E; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;padding-inline:16px;padding-block:0 40px}
+.wrap{max-width:880px;margin:0 auto}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+
+/* masthead */
+.mast{margin-inline:-16px;background:var(--red);color:var(--red-ink);padding:22px 16px 0;position:relative;overflow:hidden}
+.mast .wrap{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 20px;padding-bottom:16px}
+.mast h1{font-family:var(--f-display);font-weight:400;font-size:clamp(44px,11vw,84px);line-height:1;letter-spacing:.5px;text-shadow:3px 3px 0 rgba(0,0,0,.25)}
+.mast h1 small{font-family:var(--f-body);font-weight:700;font-size:.32em;background:var(--yellow);color:var(--yellow-ink);padding:2px 10px;border-radius:3px;vertical-align:super;margin-left:6px}
+.mast p{margin:0;font-weight:600;max-width:34ch}
+.hazard{height:12px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 14px,#1C1A16 14px 28px);margin-inline:-16px}
+.ticker{margin-inline:-16px;background:var(--ink);color:var(--paper);overflow:hidden;white-space:nowrap;font-weight:600;font-size:15px;padding:6px 0}
+.ticker span{display:inline-block;padding-left:100%;animation:tick 60s linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 14px}
+.stat{background:var(--surface);border:1.5px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0}
+.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2;overflow-wrap:anywhere}
+.stat span{font-size:12.5px;color:var(--muted);letter-spacing:.3px}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin-bottom:14px;border-bottom:2px solid var(--ink);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1.5px solid var(--ink);background:var(--surface);padding:6px 12px;border-radius:999px;font-weight:600;font-size:14.5px;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.tab .new{font-size:10px;background:var(--red);color:var(--red-ink);border-radius:3px;padding:0 4px;margin-left:4px;vertical-align:2px}
+
+.panel{display:grid;gap:16px}
+.card{background:var(--surface);border:2px solid var(--ink);border-radius:4px;padding:18px;box-shadow:5px 5px 0 var(--ink);min-width:0}
+.card h2{font-size:24px;font-weight:700;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.card h2 .tag{font-size:12px;font-weight:700;background:var(--yellow);color:var(--yellow-ink);padding:1px 8px;border-radius:3px;letter-spacing:.4px}
+.card .lede{color:var(--muted);margin:4px 0 14px;max-width:60ch}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.field{display:grid;gap:4px;flex:1 1 180px;min-width:0}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+input[type=text],input[type=number],select{width:100%;border:1.5px solid var(--ink);background:var(--paper);border-radius:4px;padding:8px 10px}
+.btn{border:2px solid var(--ink);background:var(--yellow);color:var(--yellow-ink);font-weight:700;padding:8px 16px;border-radius:4px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .08s}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.red{background:var(--red);color:var(--red-ink)}
+.btn.green{background:var(--green);color:var(--green-ink)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.err{color:var(--red);font-weight:600;font-size:14px;margin-top:6px}
+.share{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.share a{text-decoration:none;display:inline-block}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:700px){.split{grid-template-columns:1fr}}
+
+/* receipt */
+.receipt{background:var(--paper);border:1.5px dashed var(--muted);padding:16px;margin-top:14px;position:relative;font-variant-numeric:tabular-nums;overflow:hidden}
+.receipt .hd{text-align:center;border-bottom:1.5px dashed var(--muted);padding-bottom:8px;margin-bottom:8px}
+.receipt .hd b{font-family:var(--f-display);font-weight:400;font-size:28px;color:var(--red)}
+.receipt .meta{font-size:13px;color:var(--muted)}
+.li{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.li span:first-child{min-width:0}
+.li.total{border-top:2px solid var(--ink);margin-top:6px;padding-top:6px;font-weight:700;font-size:19px}
+.verdict{margin-top:10px;font-weight:700;color:var(--green)}
+.stampmark{position:absolute;right:14px;top:56px;border:3px solid var(--stamp);color:var(--stamp);font-weight:700;padding:4px 10px;border-radius:6px;transform:rotate(-14deg);font-size:18px;opacity:.85;pointer-events:none;background:transparent}
+
+/* notice */
+.notice{margin-top:14px;border:3px double var(--red);padding:16px;background:var(--paper)}
+.notice h3{font-size:22px;color:var(--red);text-align:center}
+.notice .sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:10px}
+.notice dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}
+.notice dt{font-weight:700;color:var(--muted);font-size:14px}
+.notice dd{margin:0;min-width:0}
+
+/* quiz */
+.q{font-weight:700;font-size:19px;margin-bottom:10px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:560px){.opts{grid-template-columns:1fr}}
+.opt{text-align:left;border:1.5px solid var(--ink);background:var(--paper);padding:10px 12px;border-radius:4px;cursor:pointer;font-weight:500}
+.opt:hover{background:var(--yellow);color:var(--yellow-ink)}
+.prog{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.prog i{display:block;height:100%;background:var(--red);transition:width .3s}
+.result{text-align:center;padding:10px 0}
+.result .big{font-family:var(--f-display);font-size:44px;color:var(--red);line-height:1.15}
+.bars{display:grid;gap:6px;margin-top:12px;text-align:left}
+.bar{display:grid;grid-template-columns:9em 1fr 3em;gap:8px;align-items:center;font-size:14px}
+.bar div{height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.bar div i{display:block;height:100%;background:var(--green)}
+
+/* chat */
+.chat{background:var(--paper);border:1.5px solid var(--line);border-radius:6px;padding:12px;height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:80%;padding:8px 12px;border-radius:12px;line-height:1.45}
+.msg.bhai{background:var(--red);color:var(--red-ink);align-self:flex-start;border-bottom-left-radius:2px}
+.msg.me{background:var(--green);color:var(--green-ink);align-self:flex-end;border-bottom-right-radius:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{border:1.5px solid var(--ink);background:var(--surface);border-radius:999px;padding:3px 10px;cursor:pointer;font-size:14px}
+.rate{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:700;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.rate .up{color:var(--red)}
+
+/* flee */
+.arena{position:relative;height:280px;border:2px dashed var(--muted);border-radius:6px;background:var(--paper);overflow:hidden;touch-action:none}
+.arena .pay{position:absolute;left:16px;bottom:16px}
+#flee{position:absolute;left:60%;top:30%;transition:left .18s,top .18s}
+.taunt{min-height:3.2em;font-weight:600;margin-top:10px}
+
+/* call overlay */
+.call{position:fixed;inset:0;z-index:50;background:linear-gradient(180deg,#0B3D27,#06180F);color:#F2ECD9;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(48px + env(safe-area-inset-top,0px)) 20px calc(40px + env(safe-area-inset-bottom,0px));text-align:center}
+.call .avatar{width:120px;height:120px;border-radius:50%;background:#C8102E;display:grid;place-items:center;font-family:var(--f-display);font-size:58px;color:#F7C600;margin:16px auto;box-shadow:0 0 0 0 rgba(247,198,0,.6);animation:pulse 1.4s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 28px rgba(247,198,0,0)}100%{box-shadow:0 0 0 0 rgba(247,198,0,0)}}
+.call h3{font-size:30px}
+.call .sub{opacity:.75}
+.call .lines{max-width:420px;min-height:7em;font-size:19px;font-weight:600;display:grid;gap:8px}
+.call .acts{display:flex;gap:56px}
+.call .acts button{width:72px;height:72px;border-radius:50%;border:0;font-size:28px;cursor:pointer;color:#fff}
+.call .acts .no{background:#E5383B}.call .acts .yes{background:#2BB673}
+.call .acts span{display:block;font-size:13px;margin-top:6px;color:#F2ECD9}
+.sms{background:var(--paper);border-left:4px solid var(--red);padding:10px 12px;margin-top:10px;font-size:15px}
+
+/* govt */
+.gov h2{color:var(--green)}
+.pbar{height:14px;border:1.5px solid var(--ink);border-radius:3px;overflow:hidden;margin:8px 0}
+.pbar i{display:block;height:100%;background:var(--green)}
+.out{margin-top:12px;background:var(--paper);border-left:4px solid var(--green);padding:10px 12px;min-height:3em}
+.bulb{font-size:54px;line-height:1;filter:grayscale(1) brightness(.5);transition:filter .3s;user-select:none}
+.bulb.on{filter:none}
+
+/* board */
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{font-size:13px;color:var(--muted);font-weight:600}
+td.n{text-align:right}
+tr.you{background:var(--yellow);color:var(--yellow-ink);font-weight:700}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.badge{border:1.5px solid var(--line);border-radius:6px;padding:10px;text-align:center;font-size:14px;background:var(--paper);opacity:.45}
+.badge.got{opacity:1;border-color:var(--ink);background:var(--yellow);color:var(--yellow-ink)}
+.badge b{display:block;font-size:26px}
+
+/* modal + toast */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.65);display:grid;place-items:center;padding:16px}
+.modal .box{background:var(--surface);border:2px solid var(--ink);border-radius:6px;padding:14px;max-width:420px;width:100%;max-height:92vh;overflow:auto}
+.modal img{display:block;width:100%;border:1px solid var(--line)}
+.modal p{font-size:14px;color:var(--muted);margin:8px 0}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:6px;font-weight:600;max-width:min(92vw,460px);box-shadow:4px 4px 0 var(--red);animation:pop .25s}
+@keyframes pop{from{transform:translate(-50%,20px);opacity:0}}
+footer{margin-top:28px;font-size:13px;color:var(--muted);border-top:1.5px solid var(--line);padding-top:12px;display:grid;gap:6px}
+footer button{justify-self:start}
+@media (prefers-reduced-motion:reduce){.ticker span,.call .avatar{animation:none}#flee{transition:none}*{scroll-behavior:auto}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <h1>চাঁদা বাজার<small>২.০</small></h1>
+    <p>ভাই আপনার পাশে আছে। পকেটের ভেতরে।</p>
+  </div>
+</header>
+<div class="hazard" aria-hidden="true"></div>
+<div class="ticker" aria-hidden="true"><span id="tickerText"></span></div>
+
+<main class="wrap">
+  <section class="stats" aria-label="তোমার হিসাব">
+    <div class="stat"><b id="sPaid">৳০</b><span>মোট চাঁদা দিয়েছ</span></div>
+    <div class="stat"><b id="sLevel">নবিশ</b><span>ভিকটিম লেভেল</span></div>
+    <div class="stat"><b id="sStreak">১ দিন</b><span>টানা চাঁদা স্ট্রিক</span></div>
+    <div class="stat"><b id="sMood">😐</b><span>ভাইয়ের মুড</span></div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="বিভাগ">
+    <button class="tab" role="tab" data-tab="rosid">নিজের রসিদ</button>
+    <button class="tab" role="tab" data-tab="notice">বন্ধুকে ফাঁসাও<span class="new">নতুন</span></button>
+    <button class="tab" role="tab" data-tab="quiz">ভিকটিম কুইজ<span class="new">নতুন</span></button>
+    <button class="tab" role="tab" data-tab="call">ভাইয়ের কল<span class="new">নতুন</span></button>
+    <button class="tab" role="tab" data-tab="dor">দরকষাকষি</button>
+    <button class="tab" role="tab" data-tab="palao">পালাও</button>
+    <button class="tab" role="tab" data-tab="sarkar">সরকারি ঝামেলা</button>
+    <button class="tab" role="tab" data-tab="board">লিডারবোর্ড</button>
+  </nav>
+
+  <!-- 1. Personal receipt -->
+  <section class="panel" id="p-rosid" role="tabpanel">
+    <div class="card">
+      <h2>তোমার নামে চাঁদার রসিদ <span class="tag">ছবি বানিয়ে শেয়ার করো</span></h2>
+      <p class="lede">নাম আর জায়গা দাও। ভাই হিসাব করে দেবে কত দিতে হবে আর কেন। নিচের রসিদটা একটা উদাহরণ।</p>
+      <form class="row" id="rosidForm">
+        <div class="field"><label for="rName">তোমার ডাকনাম</label><input type="text" id="rName" maxlength="20" value="মামুন" autocomplete="off"></div>
+        <div class="field"><label for="rPlace">কোথায় ধরা খেয়েছ</label>
+          <select id="rPlace"><option>মোড়ের চায়ের দোকান</option><option>বাড়ির গেট</option><option>বিয়েবাড়ির গেট</option><option>অফিসের লিফট</option><option>বাসস্ট্যান্ড</option><option>নতুন ফ্ল্যাটে ওঠার দিন</option></select></div>
+        <div class="field"><label for="rOcc">উপলক্ষ</label>
+          <select id="rOcc"><option>ঈদ</option><option>পূজা</option><option>পহেলা বৈশাখ</option><option>ক্লাবের পিকনিক</option><option>ভাইয়ের জন্মদিন</option><option>কোনো কারণ নেই</option></select></div>
+        <button class="btn red" type="submit">রসিদ কাটো</button>
+      </form>
+      <div class="err" id="rErr" hidden></div>
+      <div class="receipt" id="receipt"></div>
+      <div class="share" data-share="rosid"></div>
+    </div>
+  </section>
+
+  <!-- 2. Tag a friend notice -->
+  <section class="panel" id="p-notice" role="tabpanel" hidden>
+    <div class="card">
+      <h2>বন্ধুকে চাঁদার নোটিশ পাঠাও <span class="tag">ট্যাগ করো</span></h2>
+      <p class="lede">যে বন্ধু ট্রিট দেয়নি, তার নামে অফিশিয়াল নোটিশ। শুধু ডাকনাম দাও, আসল নেতা বা পরিচিত মানুষের নাম চলবে না।</p>
+      <form class="row" id="noticeForm">
+        <div class="field"><label for="nName">বন্ধুর ডাকনাম</label><input type="text" id="nName" maxlength="20" value="সাকিব" autocomplete="off"></div>
+        <div class="field" style="flex-basis:260px"><label for="nCrime">অপরাধ</label>
+          <select id="nCrime"></select></div>
+        <button class="btn red" type="submit">নোটিশ জারি করো</button>
+      </form>
+      <div class="err" id="nErr" hidden></div>
+      <div class="notice" id="notice"></div>
+      <div class="share" data-share="notice"></div>
+    </div>
+  </section>
+
+  <!-- 3. Quiz -->
+  <section class="panel" id="p-quiz" role="tabpanel" hidden>
+    <div class="card">
+      <h2>তুমি কোন টাইপের চাঁদা-ভিকটিম? <span class="tag">৫টা প্রশ্ন</span></h2>
+      <p class="lede">সৎ উত্তর দাও। ভাই সব দেখছে।</p>
+      <div id="quizBox"></div>
+      <div class="share" data-share="quiz"></div>
+    </div>
+  </section>
+
+  <!-- 4. Fake call -->
+  <section class="panel" id="p-call" role="tabpanel" hidden>
+    <div class="card">
+      <h2>ভাই কল করছে… <span class="tag">সাউন্ড অন করো</span></h2>
+      <p class="lede">ধরলে চাঁদা, না ধরলে ডাবল চাঁদা। কতবার কাটতে পারো দেখি। বন্ধুর সামনে চালিয়ে মজা নাও।</p>
+      <div class="row">
+        <button class="btn red" id="callStart" type="button">কল আসতে দাও</button>
+        <button class="btn ghost" id="callPrank" type="button">৫ সেকেন্ড পরে কল (বন্ধুকে ভয় দেখাও)</button>
+      </div>
+      <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat"><b id="cMissed">০</b><span>কল কেটেছ</span></div>
+        <div class="stat"><b id="cTaken">০</b><span>কল ধরেছ</span></div>
+        <div class="stat"><b id="cFine">৳০</b><span>কল না ধরার জরিমানা</span></div>
+      </div>
+      <div id="smsBox"><div class="sms"><b>ভাই (উদাহরণ মেসেজ):</b> ফোন ধরো না কেন? নেটওয়ার্ক খারাপ হলে টাওয়ারের চাঁদাও তুমি দিবা।</div></div>
+      <div class="share" data-share="call"></div>
+    </div>
+  </section>
+
+  <!-- 5. Haggle -->
+  <section class="panel" id="p-dor" role="tabpanel" hidden>
+    <div class="card">
+      <h2>ভাইয়ের সাথে দরকষাকষি</h2>
+      <p class="lede">যত কমাতে চাইবে, তত বাড়বে। এটাই বাজারের নিয়ম।</p>
+      <div class="rate"><span>শুরু: ৳৫০০</span><span>এখন: <span id="hNow" class="up">৳৫০০</span></span></div>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <div class="chips" id="hChips"></div>
+      <form class="row" id="hForm">
+        <div class="field"><label for="hIn">তোমার অফার বা কথা</label><input type="text" id="hIn" placeholder="যেমন: ১০০ টাকা দিই?" autocomplete="off"></div>
+        <button class="btn" type="submit">বলো</button>
+        <button class="btn ghost" type="button" id="hGive">হার মানো</button>
+      </form>
+      <div class="share" data-share="dor"></div>
+    </div>
+  </section>
+
+  <!-- 6. Flee -->
+  <section class="panel" id="p-palao" role="tabpanel" hidden>
+    <div class="card">
+      <h2>"দেব না" বাটনটা ধরো</h2>
+      <p class="lede">চাঁদা না দেওয়ার বাটন ধরতে পারলেই মুক্তি। চাঁদা দেওয়ার বাটন অবশ্য সবসময় হাতের কাছে।</p>
+      <div class="arena" id="arena">
+        <button class="btn red pay" id="payBtn" type="button">চাঁদা দিন ৳১০০</button>
+        <button class="btn ghost" id="flee" type="button">দেব না</button>
+      </div>
+      <div class="taunt" id="taunt" aria-live="polite">চেষ্টা: ০। ভাই অপেক্ষা করছে।</div>
+      <div class="share" data-share="palao"></div>
+    </div>
+  </section>
+
+  <!-- 7. Govt -->
+  <section class="panel gov" id="p-sarkar" role="tabpanel" hidden>
+    <div class="split">
+      <div class="card">
+        <h2>ফাইল ট্র্যাকার</h2>
+        <p class="lede">তোমার ফাইল এখন কোথায় ঘুমাচ্ছে দেখো।</p>
+        <form class="row" id="fForm">
+          <div class="field"><label for="fName">ফাইলের নাম</label><input type="text" id="fName" value="জন্ম নিবন্ধন সংশোধন" maxlength="40"></div>
+          <button class="btn green" type="submit">খোঁজো</button>
+        </form>
+        <div class="out" id="fOut"></div>
+      </div>
+      <div class="card">
+        <h2>বিদ্যুৎ আছে?</h2>
+        <p class="lede">চেক করার জন্যও বিদ্যুৎ লাগে।</p>
+        <div class="row" style="align-items:center"><span class="bulb" id="bulb" aria-hidden="true">💡</span>
+          <button class="btn green" id="bulbBtn" type="button">চেক করো</button></div>
+        <div class="out" id="bOut">আজ লোডশেডিং: ০ বার</div>
+      </div>
+      <div class="card">
+        <h2>টেন্ডার লটারি</h2>
+        <p class="lede">স্বচ্ছ প্রক্রিয়ায় বিজয়ী নির্বাচন। ফলাফল আগে থেকেই জানা।</p>
+        <button class="btn green" id="tBtn" type="button">লটারি টানো</button>
+        <div class="out" id="tOut"></div>
+      </div>
+      <div class="card">
+        <h2>ভিআইপি রোড আপডেট</h2>
+        <p class="lede">আজকের রাস্তা কখন খুলবে জেনে নাও।</p>
+        <button class="btn green" id="vBtn" type="button">আপডেট দেখো</button>
+        <div class="out" id="vOut"></div>
+      </div>
+    </div>
+    <div class="share" data-share="sarkar"></div>
+  </section>
+
+  <!-- 8. Board -->
+  <section class="panel" id="p-board" role="tabpanel" hidden>
+    <div class="card">
+      <h2>সাপ্তাহিক ভিকটিম লিডারবোর্ড</h2>
+      <p class="lede">কাল্পনিক পাড়াগুলোর সাথে তোমার তুলনা। তোমার সারি তোমার ব্রাউজারের হিসাব থেকে।</p>
+      <div style="overflow-x:auto"><table id="board"></table></div>
+    </div>
+    <div class="card">
+      <h2>তোমার ব্যাজ</h2>
+      <p class="lede">যত ঠকবে, তত ব্যাজ।</p>
+      <div class="badges" id="badges"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div><b>সতর্কতা:</b> এটা পুরোপুরি ব্যঙ্গ ও বিনোদন। সব চরিত্র ও জায়গা কাল্পনিক; কোনো ব্যক্তি, দল বা সরকারকে লক্ষ্য করে বানানো নয়। আসল চাঁদাবাজি অপরাধ। কেউ চাঁদা চাইলে ৯৯৯-এ জানাও।</div>
+    <div>কোনো কনটেন্ট আপত্তিকর লাগলে জানাও, দ্রুত সরিয়ে দেওয়া হবে।</div>
+    <button class="btn ghost" id="resetBtn" type="button">আমার হিসাব মুছে ফেলো</button>
+  </footer>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="box" role="dialog" aria-modal="true" aria-label="শেয়ার কার্ড">
+    <img id="mImg" alt="শেয়ার করার কার্ড">
+    <p>ছবিটা চেপে ধরে (কম্পিউটারে রাইট-ক্লিক করে) সেভ করো, তারপর স্টোরি বা পোস্টে দাও।</p>
+    <div class="row"><button class="btn" id="mCopy" type="button">লেখাটা কপি করো</button><button class="btn ghost" id="mClose" type="button">বন্ধ করো</button></div>
+  </div>
+</div>
+
+<div class="call" id="call" hidden>
+  <div><div class="sub" id="callSub">মোবাইল কল…</div><div class="avatar">ভা</div><h3>পাড়ার ভাই 🔥</h3><div class="sub">+৮৮০ ১৭XX-চাঁদা-০০</div></div>
+  <div class="lines" id="callLines" aria-live="polite"></div>
+  <div class="acts" id="callActs">
+    <div><button class="no" id="callNo" aria-label="কল কাটো">✕</button><span>কাটো</span></div>
+    <div><button class="yes" id="callYes" aria-label="কল ধরো">✆</button><span>ধরো</span></div>
+  </div>
+</div>
+
+<script>
+(() => {
+const APP_LINK = "https://claude.ai/artifact/W48XVug36cdRCWfUcfAQ8Q";
+const $ = s => document.querySelector(s);
+const BN = "০১২৩৪৫৬৭৮৯";
+const bn = n => Math.round(n).toLocaleString("en-IN").replace(/\d/g, d => BN[d]);
+const tk = n => "৳" + bn(n);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(v => v[1]);
+
+/* ---------- storage ---------- */
+const KEY = "chada2";
+const blank = () => ({ paid: 0, escapes: 0, missed: 0, taken: 0, fine: 0, haggleLoss: 0, outages: 0, badges: [], streak: 1, last: "", quiz: "" });
+let S = blank();
+try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+(() => {
+  const today = new Date().toDateString();
+  const y = new Date(Date.now() - 864e5).toDateString();
+  if (S.last !== today) { S.streak = S.last === y ? S.streak + 1 : 1; S.last = today; }
+  save();
+})();
+
+/* ---------- stats + badges ---------- */
+const LEVELS = [[0, "নবিশ"], [500, "নিয়মিত দাতা"], [2000, "পাড়ার ATM"], [6000, "ভাইয়ের প্রিয়"], [15000, "চাঁদা কিংবদন্তি"]];
+const MOODS = ["😐", "🙂", "😏", "😎", "🤑"];
+const BADGES = {
+  rosid: ["🧾", "প্রথম রসিদ"], notice: ["📮", "বন্ধুকে ফাঁসিয়েছ"], quiz: ["🧠", "নিজেকে চিনেছ"],
+  call5: ["📵", "৫ কল কেটেছ"], answered: ["📞", "ভাইয়ের কল ধরেছ"], haggle: ["📈", "দরকষাকষিতে হেরেছ"],
+  escape: ["🏃", "পালানো শিল্পী"], file: ["🗂️", "ফাইল জমা দিয়েছ"], streak3: ["🔥", "৩ দিনের স্ট্রিক"], k5: ["💸", "৳৫,০০০ ক্লাব"]
+};
+let toastT;
+function toast(msg) {
+  document.querySelectorAll(".toast").forEach(t => t.remove());
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
+  document.body.appendChild(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 3800);
+}
+function badge(id) {
+  if (S.badges.includes(id)) return;
+  S.badges.push(id); save(); toast("নতুন ব্যাজ: " + BADGES[id][0] + " " + BADGES[id][1]); renderBoard();
+}
+function pay(n) { S.paid += n; save(); renderStats(); if (S.paid >= 5000) badge("k5"); }
+function renderStats() {
+  $("#sPaid").textContent = tk(S.paid);
+  let li = 0; LEVELS.forEach((l, i) => { if (S.paid >= l[0]) li = i; });
+  $("#sLevel").textContent = LEVELS[li][1];
+  $("#sMood").textContent = MOODS[li];
+  $("#sStreak").textContent = bn(S.streak) + " দিন";
+  $("#cMissed").textContent = bn(S.missed); $("#cTaken").textContent = bn(S.taken); $("#cFine").textContent = tk(S.fine);
+}
+if (S.streak >= 3) setTimeout(() => badge("streak3"), 1500);
+
+/* ---------- ticker ---------- */
+$("#tickerText").textContent = [
+  "ব্রেকিং: ভাই ঘোষণা দিয়েছেন, এখন থেকে অনলাইনেও চাঁদা নেওয়া হবে",
+  "পেঁয়াজের দাম কমেছে, ভাইদর বেড়েছে ২০%",
+  "গবেষণা: 'পরে দিব' বলা মানুষদের ৯৯% পরে ডাবল দেয়",
+  "নতুন সার্ভিস: চাঁদা দিলে ভাই আর একবার কম ফোন করবে (শর্ত প্রযোজ্য)",
+  "বৃষ্টির কারণে আজ চাঁদা ১০% বেশি, ভাইয়ের ছাতা লাগবে",
+  "এই অ্যাপ খোলার জন্য ৳১০ স্ক্রিন-টাইম চাঁদা কাটা হয়েছে"
+].join("   ✦   ");
+
+/* ---------- name filter ---------- */
+const BLOCK = ["মন্ত্রী","এমপি","নেতা","নেত্রী","লীগ","দল","বিএনপি","আওয়ামী","জামায়াত","জাতীয় পার্টি","সরকার","পুলিশ","ওসি","শেখ","জিয়া","প্রধান","প্রেসিডেন্ট","চেয়ারম্যান","কাউন্সিলর","minister","mp","leader","league","bnp","awami","police","pm"];
+function cleanName(v) {
+  v = (v || "").replace(/[0-9০-৯@#<>{}\[\]\\/]/g, "").replace(/\s+/g, " ").trim();
+  if (!v) return { err: "একটা ডাকনাম লেখো।" };
+  const low = v.toLowerCase();
+  if (BLOCK.some(b => low.split(/\s+/).includes(b) || (b.length > 3 && low.includes(b))))
+    return { err: "নেতা, দল বা পদবির নাম চলবে না। বন্ধুর ডাকনাম দাও।" };
+  if (v.split(" ").length > 2) return { err: "শুধু ডাকনাম দাও, পুরো নাম নয়।" };
+  return { v };
+}
+
+/* ---------- share ---------- */
+const shareText = {};
+function shareBar(key, text, card) {
+  shareText[key] = text;
+  const box = document.querySelector(`[data-share="${key}"]`);
+  const full = encodeURIComponent(text + (APP_LINK ? "\n" + APP_LINK : ""));
+  box.innerHTML = "";
+  if (card) {
+    const b = document.createElement("button"); b.className = "btn red"; b.type = "button"; b.textContent = "ছবি কার্ড বানাও";
+    b.onclick = () => openCard(card, text); box.appendChild(b);
+  }
+  const c = document.createElement("button"); c.className = "btn ghost"; c.type = "button"; c.textContent = "কপি";
+  c.onclick = () => copy(text); box.appendChild(c);
+  const wa = document.createElement("a"); wa.className = "btn green"; wa.textContent = "WhatsApp";
+  wa.href = "https://wa.me/?text=" + full; wa.target = "_blank"; wa.rel = "noopener"; box.appendChild(wa);
+  if (APP_LINK) {
+    const fb = document.createElement("a"); fb.className = "btn ghost"; fb.textContent = "Facebook";
+    fb.href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(APP_LINK) + "&quote=" + encodeURIComponent(text);
+    fb.target = "_blank"; fb.rel = "noopener"; box.appendChild(fb);
+  }
+}
+let skipCopyTaunt = false;
+function copy(text) {
+  const t = text + (APP_LINK ? "\n" + APP_LINK : "");
+  skipCopyTaunt = true;
+  const done = () => toast("কপি হয়েছে। এবার বন্ধুদের গ্রুপে ছাড়ো।");
+  const fallback = () => { const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) { toast("কপি হয়নি। লেখাটা নিজে সিলেক্ট করে কপি করো।"); } ta.remove(); };
+  try { navigator.clipboard.writeText(t).then(done, fallback); } catch (e) { fallback(); }
+  setTimeout(() => skipCopyTaunt = false, 300);
+}
+
+/* canvas share card, 1080x1350 (4:5) */
+async function openCard(card, text) {
+  try { await Promise.all([document.fonts.load('700 60px "Hind Siliguri"'), document.fonts.load('80px "Galada"')]); } catch (e) {}
+  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  const BODY = '"Hind Siliguri","Noto Sans Bengali","Nirmala UI",sans-serif';
+  x.fillStyle = "#F2ECD9"; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#C8102E"; x.fillRect(0, 0, W, 210);
+  x.fillStyle = "#F7C600"; x.font = '96px "Galada",' + BODY; x.textBaseline = "middle"; x.fillText("চাঁদা বাজার", 60, 110);
+  x.fillStyle = "#FFFFFF"; x.font = "600 34px " + BODY; x.textAlign = "right"; x.fillText(card.kicker || "", W - 60, 112); x.textAlign = "left";
+  for (let i = -2; i < 40; i++) { x.fillStyle = i % 2 ? "#1C1A16" : "#F7C600"; x.beginPath(); x.moveTo(i * 32, 210); x.lineTo(i * 32 + 32, 210); x.lineTo(i * 32 + 16, 236); x.lineTo(i * 32 - 16, 236); x.fill(); }
+  x.fillStyle = "#1C1A16"; x.fillRect(0, 210, W, 0);
+  const wrap = (str, maxW) => { const out = []; let line = ""; str.split(" ").forEach(w => { const t = line ? line + " " + w : w; if (x.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; }); if (line) out.push(line); return out; };
+  let y = 320;
+  x.fillStyle = "#1C1A16"; x.font = "700 70px " + BODY; x.textBaseline = "alphabetic";
+  wrap(card.title, W - 140).forEach(l => { x.fillText(l, 70, y); y += 88; });
+  y += 10; x.fillStyle = "#C8102E"; x.fillRect(70, y, 140, 8); y += 70;
+  (card.rows || []).forEach(r => {
+    x.font = "500 40px " + BODY; x.fillStyle = "#3A362C";
+    const lines = wrap(r[0], r[1] ? W - 420 : W - 140);
+    lines.forEach((l, i) => { x.fillText(l, 70, y + i * 52); });
+    if (r[1]) { x.font = "700 42px " + BODY; x.fillStyle = "#1C1A16"; x.textAlign = "right"; x.fillText(r[1], W - 70, y); x.textAlign = "left"; }
+    y += lines.length * 52 + 18;
+  });
+  if (card.big) { y += 20; x.fillStyle = "#0B5D3B"; x.font = "700 60px " + BODY; wrap(card.big, W - 140).forEach(l => { x.fillText(l, 70, y); y += 76; }); }
+  if (card.stamp) {
+    x.save(); x.translate(W - 230, H - 360); x.rotate(-0.25); x.strokeStyle = "#B3122B"; x.lineWidth = 8; x.globalAlpha = .85;
+    x.font = "700 48px " + BODY; const sw = x.measureText(card.stamp).width + 60;
+    x.strokeRect(-sw / 2, -50, sw, 100); x.fillStyle = "#B3122B"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(card.stamp, 0, 2); x.restore();
+  }
+  x.fillStyle = "#0B5D3B"; x.fillRect(0, H - 150, W, 150);
+  x.fillStyle = "#F2ECD9"; x.font = "700 40px " + BODY; x.textBaseline = "middle"; x.fillText("তোমারটা বানাও: চাঁদা বাজার ২.০", 60, H - 98);
+  x.font = "400 26px " + BODY; x.globalAlpha = .8; x.fillText("ব্যঙ্গ ও বিনোদন। সব চরিত্র কাল্পনিক। আসল চাঁদাবাজি অপরাধ।", 60, H - 48); x.globalAlpha = 1;
+  $("#mImg").src = c.toDataURL("image/png");
+  $("#mCopy").onclick = () => copy(text);
+  $("#modal").hidden = false; $("#mClose").focus();
+}
+$("#mClose").onclick = () => $("#modal").hidden = true;
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") $("#modal").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("#modal").hidden = true; });
+
+/* ---------- tabs ---------- */
+const tabs = [...document.querySelectorAll(".tab")];
+function show(id, push) {
+  if (!document.getElementById("p-" + id)) id = "rosid";
+  tabs.forEach(t => t.setAttribute("aria-selected", t.dataset.tab === id));
+  document.querySelectorAll('[role="tabpanel"]').forEach(p => p.hidden = p.id !== "p-" + id);
+  if (push) try { history.replaceState(null, "", "#" + id); } catch (e) {}
+  try { localStorage.setItem(KEY + "tab", id); } catch (e) {}
+}
+tabs.forEach(t => t.onclick = () => { show(t.dataset.tab, true); t.scrollIntoView({ block: "nearest", inline: "center" }); });
+let startTab = location.hash.slice(1);
+if (!startTab) try { startTab = localStorage.getItem(KEY + "tab") || "rosid"; } catch (e) { startTab = "rosid"; }
+window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+
+/* ---------- 1. receipt ---------- */
+const ITEMS = ["ভাই-অ্যাডেড ট্যাক্স (VAT)", "ভালোবাসার টাকা", "চা-সিঙ্গারা ফান্ড", "মাইক ভাড়া (যেটা কখনো বাজেনি)", "ব্যানারে তোমার নাম না থাকার ফি", "ভাইয়ের বাইকের তেল", "ভবিষ্যৎ চাঁদার অগ্রিম", "রসিদ ছাপানোর খরচ", "পাড়ার উন্নয়ন (কোন উন্নয়ন, জিজ্ঞেস করা নিষেধ)", "দেরিতে দরজা খোলার জরিমানা", "ভাইকে 'আপনি' বলার দণ্ড", "চেহারায় বিরক্তি দেখানোর চার্জ", "ভাইয়ের মোবাইল রিচার্জ", "সার্ভিস চার্জ (সার্ভিস নেই)"];
+const OCC = { "ঈদ": 2.2, "পূজা": 2, "পহেলা বৈশাখ": 1.5, "ক্লাবের পিকনিক": 1.3, "ভাইয়ের জন্মদিন": 1.8, "কোনো কারণ নেই": 1 };
+const VERDICT = ["ভাই খুশি। আপাতত বেঁচে গেলে।", "এটা শুধু প্রথম কিস্তি। দ্বিতীয়টা সারপ্রাইজ।", "ভাই বলেছে পরের সপ্তাহে আবার আসবে, ভালোবেসে।", "রসিদ হারালে আবার পুরোটা দিতে হবে।", "ভাই তোমার নাম মনে রেখেছে। এটা ভালো খবর না।"];
+function makeReceipt(first) {
+  const nm = cleanName($("#rName").value); const err = $("#rErr");
+  if (nm.err) { err.textContent = nm.err; err.hidden = false; return; } err.hidden = true;
+  const place = $("#rPlace").value, occ = $("#rOcc").value, mul = OCC[occ];
+  const rows = shuffle(ITEMS).slice(0, 4).map(i => [i, Math.round(rnd(40, 400) * mul / 10) * 10]);
+  const total = rows.reduce((s, r) => s + r[1], 0);
+  const no = rnd(1000, 9999), v = pick(VERDICT);
+  $("#receipt").innerHTML = `<div class="hd"><b>চাঁদা রসিদ</b><div class="meta">রসিদ নং ${bn(no)} · ${occ} · ${place}</div></div>
+    <div class="li"><span>দাতা</span><span><b></b></span></div>
+    ${rows.map(r => `<div class="li"><span>${r[0]}</span><span>${tk(r[1])}</span></div>`).join("")}
+    <div class="li total"><span>সর্বমোট</span><span>${tk(total)}</span></div>
+    <div class="verdict">${v}</div><div class="stampmark">পরিশোধিত</div>`;
+  $("#receipt .li b").textContent = nm.v + (first ? " (উদাহরণ)" : "");
+  if (!first) { pay(total); badge("rosid"); }
+  shareBar("rosid", `আজ ${place}-এ ধরা খেলাম 😭 ${occ} উপলক্ষে ${nm.v}-এর চাঁদা ${tk(total)}। ${v} তোমার রসিদ কত?`,
+    { kicker: "রসিদ নং " + bn(no), title: `${nm.v}-এর চাঁদা রসিদ`, rows: rows.map(r => [r[0], tk(r[1])]).concat([["সর্বমোট", tk(total)]]), big: v, stamp: "পরিশোধিত" });
+}
+$("#rosidForm").onsubmit = e => { e.preventDefault(); makeReceipt(false); };
+
+/* ---------- 2. friend notice ---------- */
+const CRIMES = [
+  ["ট্রিট দেবে বলে ৩ বছর ধরে দেয়নি", 1500], ["গ্রুপে seen করে রিপ্লাই দেয় না", 300], ["'৫ মিনিটে আসছি' বলে ২ ঘণ্টা লেট", 700],
+  ["ধার নিয়ে বেমালুম ভুলে গেছে", 2000], ["বিয়ের দাওয়াত দেয়নি", 2500], ["সব ছবিতে নিজে সুন্দর, বাকিদের চোখ বন্ধ", 900],
+  ["নতুন চাকরির খবর লুকিয়েছে", 3000], ["জন্মদিনের কেক একা খেয়েছে", 800], ["ভয়েস মেসেজ পাঠায় ৪ মিনিটের", 400]
+];
+const PUNISH = ["ফ্যামিলি গ্রুপে তোমার ক্লাস সেভেনের ছবি যাবে", "পাড়ার মাইকে তোমার নাম তিনবার ঘোষণা হবে", "এক মাস তোমার চায়ে চিনি বন্ধ", "তোমার ক্রাশকে সব বলে দেওয়া হবে", "ভাই তোমার বাসার নিচে গিটার নিয়ে গান গাইবে", "তোমার স্ট্যাটাসে সব বন্ধু 'হাহা' রিঅ্যাক্ট দেবে", "আম্মুকে জানানো হবে তুমি রাত ৩টা পর্যন্ত অনলাইন থাকো"];
+const DEADLINE = ["আজ রাত ১২টার মধ্যে", "পরের আড্ডার আগে", "বেতন ঢোকার ১ ঘণ্টার মধ্যে", "এই নোটিশ পড়ার সাথে সাথে"];
+$("#nCrime").innerHTML = CRIMES.map((c, i) => `<option value="${i}">${c[0]}</option>`).join("");
+function makeNotice(first) {
+  const nm = cleanName($("#nName").value); const err = $("#nErr");
+  if (nm.err) { err.textContent = nm.err; err.hidden = false; return; } err.hidden = true;
+  const cr = CRIMES[+$("#nCrime").value], fine = Math.round(cr[1] * (0.8 + Math.random() * 0.8) / 10) * 10;
+  const p = pick(PUNISH), d = pick(DEADLINE), no = "চাঁ/" + bn(rnd(100, 999)) + "/২০২৬";
+  const n = $("#notice");
+  n.innerHTML = `<h3>চূড়ান্ত চাঁদা নোটিশ</h3><div class="sub">স্মারক ${no} · পাড়া চাঁদা আদালত (কাল্পনিক)</div>
+    <dl><dt>অভিযুক্ত</dt><dd id="nmOut"></dd><dt>অপরাধ</dt><dd>${cr[0]}</dd><dt>জরিমানা</dt><dd><b>${tk(fine)}</b></dd>
+    <dt>শেষ সময়</dt><dd>${d}</dd><dt>না দিলে</dt><dd>${p}</dd><dt>আপিল</dt><dd>গ্রহণযোগ্য নয়। আপিল ফি ${tk(fine * 2)}।</dd></dl>`;
+  $("#nmOut").textContent = nm.v + (first ? " (উদাহরণ)" : "");
+  if (!first) badge("notice");
+  shareBar("notice", `🚨 @${nm.v} তোমার নামে চাঁদা নোটিশ জারি হয়েছে! অপরাধ: ${cr[0]}। জরিমানা ${tk(fine)}, ${d}। না দিলে ${p}। 😈`,
+    { kicker: "স্মারক " + no, title: `${nm.v}, তোমার নামে নোটিশ!`, rows: [["অপরাধ: " + cr[0]], ["জরিমানা", tk(fine)], ["শেষ সময়: " + d]], big: "না দিলে: " + p, stamp: "জরুরি" });
+}
+$("#noticeForm").onsubmit = e => { e.preventDefault(); makeNotice(false); };
+
+/* ---------- 3. quiz ---------- */
+const TYPES = {
+  d: ["দানবীর হাতেম তাই", "পাড়ার সবচেয়ে প্রিয় ATM তুমি। ভাইয়েরা তোমার ছবি দিয়ে ক্যালেন্ডার বানিয়েছে।"],
+  e: ["অদৃশ্য মানব", "তোমাকে শেষ দেখা গেছে চায়ের দোকানের পেছনে। ভাইয়েরা এখনো খুঁজছে।"],
+  h: ["দরকষাকষি চ্যাম্পিয়ন", "একবার ভাইয়ের কাছ থেকেই উল্টো ৳২০ চাঁদা নিয়ে এসেছিলে।"],
+  x: ["বাহানা বিশেষজ্ঞ", "তোমার দাদি এই বছর ৭ বার অসুস্থ হয়েছেন। ভাইয়েরা ফুল পাঠাতে চায়।"]
+};
+const QS = [
+  ["পাড়ার ভাই দরজায় নক করলে তুমি কী করো?", [["মানিব্যাগ বের করি", "d"], ["খাটের নিচে লুকাই", "e"], ["বলি, ভাই ২০ টাকায় হয় না?", "h"], ["বলি, আম্মু বাসায় নেই, পরে আসেন", "x"]]],
+  ["ঈদের আগে ভাইয়ের কল এলে?", [["প্রথম রিং-এ ধরি", "d"], ["ফোন এয়ারপ্লেন মোডে", "e"], ["ধরেই ডিসকাউন্ট কোড চাই", "h"], ["বলি নেটওয়ার্ক খারাপ, হ্যালো… হ্যালো…", "x"]]],
+  ["রসিদ চাইলে ভাই রেগে গেল। তুমি?", [["সরি বলে ডাবল দিই", "d"], ["পেছনের দরজা দিয়ে হাওয়া", "e"], ["বলি, রসিদ ছাড়া ১০% ছাড় দেন", "h"], ["বলি, বাসায় মেহমান, কাল আসেন", "x"]]],
+  ["তোমার মানিব্যাগে সাধারণত কী থাকে?", [["ভাইয়ের জন্য আলাদা খাম", "d"], ["কিছুই না, ওটাই কৌশল", "e"], ["খুচরা পয়সা, দরদামের জন্য", "h"], ["পুরোনো রসিদ, প্রমাণ হিসেবে", "x"]]],
+  ["ভাই বললো, 'এইবারই শেষ, আর চাইব না।' তুমি?", [["বিশ্বাস করি", "d"], ["হাসি থামাতে পারি না", "e"], ["লিখিত চুক্তি চাই", "h"], ["বলি, আমিও কাল বিদেশ চলে যাচ্ছি", "x"]]]
+];
+let qi = 0, qs = {};
+function renderQuiz() {
+  const box = $("#quizBox");
+  if (qi >= QS.length) return quizResult(true);
+  const q = QS[qi];
+  box.innerHTML = `<div class="prog"><i style="width:${qi / QS.length * 100}%"></i></div><div class="q">${bn(qi + 1)}. ${q[0]}</div><div class="opts">${shuffle(q[1]).map(o => `<button class="opt" type="button" data-t="${o[1]}">${o[0]}</button>`).join("")}</div>`;
+  box.querySelectorAll(".opt").forEach(b => b.onclick = () => { qs[b.dataset.t] = (qs[b.dataset.t] || 0) + 1; qi++; renderQuiz(); });
+  shareBar("quiz", "তুমি কোন টাইপের চাঁদা-ভিকটিম? আমি বের করে ফেলেছি 😂 তুমিও খেলো:");
+}
+function quizResult(fresh) {
+  const total = Object.values(qs).reduce((a, b) => a + b, 0) || 1;
+  const top = Object.keys(TYPES).sort((a, b) => (qs[b] || 0) - (qs[a] || 0))[0];
+  const pct = k => Math.round((qs[k] || 0) / total * 100);
+  if (fresh) { S.quiz = JSON.stringify(qs); save(); badge("quiz"); }
+  $("#quizBox").innerHTML = `<div class="result"><div>তুমি হলে…</div><div class="big">${TYPES[top][0]}</div><p>${TYPES[top][1]}</p>
+    <div class="bars">${Object.keys(TYPES).map(k => `<div class="bar"><span>${TYPES[k][0]}</span><div><i style="width:${pct(k)}%"></i></div><span>${bn(pct(k))}%</span></div>`).join("")}</div>
+    <p><button class="btn ghost" type="button" id="qAgain">আবার খেলো</button></p></div>`;
+  $("#qAgain").onclick = () => { qi = 0; qs = {}; renderQuiz(); };
+  shareBar("quiz", `আমি ${pct(top)}% "${TYPES[top][0]}" 😭 ${TYPES[top][1]} তুমি কোন টাইপের চাঁদা-ভিকটিম? বন্ধুদের ট্যাগ করো 👇`,
+    { kicker: "ভিকটিম কুইজ", title: `আমি ${bn(pct(top))}% ${TYPES[top][0]}`, rows: Object.keys(TYPES).map(k => [TYPES[k][0], bn(pct(k)) + "%"]), big: TYPES[top][1] });
+}
+try { if (S.quiz) { qs = JSON.parse(S.quiz); qi = QS.length; } } catch (e) {}
+renderQuiz();
+
+/* ---------- 4. fake call ---------- */
+let ac, ringT, callStep;
+function ring() {
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const beep = () => { [0, .25].forEach(off => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "square"; o.frequency.value = off ? 659 : 523; g.gain.value = .07; o.connect(g); g.connect(ac.destination); o.start(ac.currentTime + off); o.stop(ac.currentTime + off + .2); }); };
+    beep(); ringT = setInterval(beep, 1300);
+  } catch (e) {}
+  try { navigator.vibrate && navigator.vibrate([400, 200, 400]); } catch (e) {}
+}
+function stopRing() { clearInterval(ringT); }
+const CALL_LINES = [
+  ["হ্যালো, চিনছো? আমি পাড়ার ভাই।", "তোমার নাম লিস্টে উপরে আছে। অভিনন্দন।", "এবার একটু বেশি লাগবে, ডলারের দাম বেড়েছে।", "বিকাশে না, হাতে হাতে। রসিদ? কিসের রসিদ?"],
+  ["কী খবর? শুনলাম নতুন জুতা কিনছো।", "জুতা কিনতে পারো, চাঁদা দিতে পারো না?", "আজ সন্ধ্যায় চায়ের দোকানে আসো।", "না আসলে আমি তোমার বাসায় চা খেতে আসব।"],
+  ["ভাই বলছি। ফোন কেটে দিও না, আবার দিব।", "তোমার ফেসবুকে দেখলাম কক্সবাজার গেছিলা।", "সমুদ্র দেখার ট্যাক্স বাকি আছে।", "টাকা রেডি রাখো, না হলে পরের ট্যুরে আমিও যাব।"]
+];
+const SMS = ["ফোন ধরো না কেন? নেটওয়ার্ক খারাপ হলে টাওয়ারের চাঁদাও তুমি দিবা।", "কল কাটার জন্য ৳৫০ যোগ হলো। আরেকবার কাটো, দেখি।", "আমি জানি তুমি অনলাইনে আছো। সবুজ বাতি জ্বলছে।", "ঠিক আছে, ধরতে হবে না। আমি বাসার নিচেই আছি।", "তোমার আম্মুর নম্বর আমার কাছে আছে, মনে রেখো।", "এত কল কাটলে আমি তো ভাবব তুমি আমাকে ভালোবাসো না।"];
+function startCall() {
+  const el = $("#call"); el.hidden = false; $("#callLines").innerHTML = ""; $("#callActs").hidden = false;
+  $("#callSub").textContent = S.missed ? `মোবাইল কল… (${bn(S.missed)}টা মিসড কল)` : "মোবাইল কল…"; ring(); $("#callYes").focus();
+}
+$("#callStart").onclick = startCall;
+$("#callPrank").onclick = () => { toast("৫ সেকেন্ড পরে কল আসবে। ফোনটা বন্ধুর হাতে দাও 😈"); setTimeout(startCall, 5000); };
+$("#callNo").onclick = () => {
+  stopRing(); $("#call").hidden = true; S.missed++; S.fine += 50 * S.missed; save(); pay(50 * S.missed); renderStats();
+  const sms = SMS[Math.min(S.missed - 1, SMS.length - 1)] ;
+  $("#smsBox").innerHTML = `<div class="sms"><b>ভাই:</b> </div>`; $("#smsBox .sms").append(sms);
+  toast(`কল কেটেছ। জরিমানা ${tk(50 * S.missed)} যোগ হলো।`);
+  if (S.missed >= 5) badge("call5");
+  if (S.missed % 3 === 0) setTimeout(() => { toast("ভাই আবার কল দিচ্ছে…"); setTimeout(startCall, 1200); }, 2500);
+  shareCall();
+};
+$("#callYes").onclick = () => {
+  stopRing(); $("#callActs").hidden = true; $("#callSub").textContent = "কল চলছে ০০:০১";
+  const lines = pick(CALL_LINES), box = $("#callLines"); let i = 0;
+  clearInterval(callStep);
+  callStep = setInterval(() => {
+    if (i < lines.length) { const d = document.createElement("div"); d.textContent = "“" + lines[i++] + "”"; box.appendChild(d); $("#callSub").textContent = "কল চলছে ০০:" + bn(i * 4).padStart(2, "০"); }
+    else { clearInterval(callStep); const amt = rnd(5, 30) * 100; pay(amt); S.taken++; save(); renderStats(); badge("answered");
+      const d = document.createElement("div"); d.style.color = "#F7C600"; d.textContent = `কল শেষ। দাবি: ${tk(amt)}`; box.appendChild(d);
+      setTimeout(() => { $("#call").hidden = true; shareCall(); }, 2200); }
+  }, 1600);
+};
+function shareCall() {
+  shareBar("call", `ভাইয়ের ${bn(S.missed)}টা কল কেটেছি, জরিমানা জমেছে ${tk(S.fine)} 📵😂 তুমি কয়টা কাটতে পারো?`,
+    { kicker: "মিসড কল রিপোর্ট", title: `ভাইয়ের ${bn(S.missed)}টা কল কেটেছি`, rows: [["কল ধরেছি", bn(S.taken) + "টা"], ["না ধরার জরিমানা", tk(S.fine)]], big: "ভাই: " + SMS[Math.min(Math.max(S.missed - 1, 0), SMS.length - 1)] });
+}
+shareCall();
+
+/* ---------- 5. haggle ---------- */
+let rate = 500;
+const chat = $("#chat");
+function say(who, t) { const d = document.createElement("div"); d.className = "msg " + who; d.textContent = t; chat.appendChild(d); chat.scrollTop = chat.scrollHeight; }
+function toNum(s) { const m = s.replace(/[০-৯]/g, d => BN.indexOf(d)).match(/\d+/); return m ? +m[0] : null; }
+function bhaiReply(t) {
+  const n = toNum(t); let r;
+  if (n !== null) {
+    if (n >= rate) { rate = Math.round(rate * 1.5 / 10) * 10; r = `এত সহজে রাজি? তাহলে নিশ্চয়ই আরো আছে। এখন ${tk(rate)}।`; }
+    else if (n < rate * .3) { rate = Math.round(rate * 1.25 / 10) * 10; r = pick([`${tk(n)}? এটা দিয়ে আমার চা-ও হয় না। অপমান ট্যাক্সসহ এখন ${tk(rate)}।`, `ভাই হাসলো। হাসির চার্জসহ ${tk(rate)}।`, `এই অফার শুনে ভাইয়ের বাইক বন্ধ হয়ে গেছে। মেরামতসহ ${tk(rate)}।`]); }
+    else { rate = Math.round(rate * 1.08 / 10) * 10; r = pick([`কাছাকাছি আসছো। তাই ${tk(rate)}।`, `ভালো চেষ্টা। চেষ্টার জন্য ${tk(rate)}।`]); }
+  } else if (/না|দিব না|দেব না|no/i.test(t)) { rate = Math.round(rate * 1.3 / 10) * 10; r = `'না' শব্দটা ভাইয়ের ডিকশনারিতে নেই। ${tk(rate)}।`; }
+  else if (/রসিদ/.test(t)) { rate += 100; r = `রসিদ চাইলা? রসিদ প্রিন্টের খরচ ৳১০০ যোগ। ${tk(rate)}।`; }
+  else if (/পরে|কাল/.test(t)) { rate = Math.round(rate * 1.2 / 10) * 10; r = `পরে দিলে সুদ লাগবে। দৈনিক ২০%। ${tk(rate)}।`; }
+  else if (/প্লিজ|ভাই|please/i.test(t)) { rate += 50; r = `আবেগে চিঁড়া ভেজে না। আবেগ চার্জ ৳৫০। ${tk(rate)}।`; }
+  else { rate += 30; r = pick([`বুঝলাম না। না বোঝার চার্জ ৳৩০। ${tk(rate)}।`, `এত কথা বলো কেন? কথার বিল ${tk(rate)}।`]); }
+  $("#hNow").textContent = tk(rate) + ` (+${bn((rate - 500) / 5)}%)`;
+  return r;
+}
+function talk(t) { if (!t.trim()) return; say("me", t); setTimeout(() => say("bhai", bhaiReply(t)), 450); }
+say("bhai", "ঈদের চাঁদা ৳৫০০। দরদাম চলবে, তবে আমার দিকে।");
+["৳৫০ দিই?", "ভাই প্লিজ", "দেব না", "রসিদ দেবেন?", "পরে দিই"].forEach(c => { const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = c; b.onclick = () => talk(c); $("#hChips").appendChild(b); });
+$("#hForm").onsubmit = e => { e.preventDefault(); talk($("#hIn").value); $("#hIn").value = ""; };
+$("#hGive").onclick = () => {
+  const loss = rate - 500; say("bhai", `লক্ষ্মী নাগরিক। ${tk(rate)} বুঝে নিলাম। আগামী সপ্তাহে আবার দেখা হবে।`);
+  pay(rate); S.haggleLoss += loss; save(); if (loss > 0) badge("haggle");
+  shareBar("dor", `ভাইয়ের সাথে দরকষাকষি করে ${tk(500)} থেকে ${tk(rate)} দিয়ে আসলাম 🤡 দরদাম শিখতে চাইলে আমার কাছে আসবা না।`,
+    { kicker: "দরকষাকষির ফলাফল", title: `দরদাম করে ${tk(loss)} বেশি দিলাম`, rows: [["শুরুর দাবি", tk(500)], ["শেষ পর্যন্ত দিলাম", tk(rate)], ["দরকষাকষির লাভ", "-" + tk(loss)]], stamp: "হেরেছি" });
+  rate = 500; $("#hNow").textContent = tk(500); setTimeout(() => say("bhai", "নতুন রাউন্ড। ঈদের চাঁদা ৳৫০০।"), 1200);
+};
+shareBar("dor", "ভাইয়ের সাথে দরকষাকষি করতে গিয়েছিলাম। ভুল করেছিলাম। তুমিও চেষ্টা করো:");
+
+/* ---------- 6. flee ---------- */
+const FLEE = ["হাহা, এত সহজ?", "আঙুল এত ধীর কেন?", "ভাই জিমে যায়, তুমি না।", "বাটনও তোমাকে চাঁদা দিতে বলছে।", "বাম দিকে চাঁদা দেওয়ার বাটন আছে, ওটা সহজ।", "তোমার চেষ্টা দেখে ভাইয়ের মায়া লাগছে।", "আরেকবার চেষ্টার ফি ৳১০।", "তোমার আম্মু দেখলে কী বলতো?", "বাটনটা ভাইয়ের ছেলে। ও দৌড় জানে।"];
+let tries = 0, caught = false;
+const arena = $("#arena"), fb = $("#flee");
+function jump(e) {
+  if (caught) return;
+  if (e) e.preventDefault();
+  tries++;
+  if (tries >= 18) { caught = true; fb.textContent = "ঠিক আছে, ধরো"; $("#taunt").textContent = "ক্লান্ত হয়ে গেলাম। এবার ধরতে দিলাম…"; return; }
+  const a = arena.getBoundingClientRect(), b = fb.getBoundingClientRect();
+  fb.style.left = rnd(8, Math.max(8, a.width - b.width - 8)) + "px";
+  fb.style.top = rnd(8, Math.max(8, a.height - b.height - 70)) + "px";
+  $("#taunt").textContent = `চেষ্টা: ${bn(tries)}। ${pick(FLEE)}`;
+}
+fb.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") jump(); });
+fb.addEventListener("pointerdown", jump);
+fb.addEventListener("click", () => {
+  if (!caught) return;
+  S.escapes++; save(); badge("escape");
+  $("#taunt").textContent = `মুক্তি! ${bn(tries)} বার চেষ্টার পর। পেছনে তাকাও, ভাই দাঁড়িয়ে আছে। পালানোর জরিমানা ৳২০০।`;
+  pay(200); shareFlee(); tries = 0; caught = false; fb.textContent = "দেব না";
+});
+$("#payBtn").onclick = () => { pay(100); $("#taunt").textContent = pick(["লক্ষ্মী নাগরিক। ভাই খুশি।", "এত তাড়াতাড়ি? ভাই আরো চাইবে।", "দিয়েছ বলে ভাই তোমার নাম ভালো লিস্টে লিখলো। ভালো লিস্টের চাঁদা বেশি।"]); };
+function shareFlee() {
+  shareBar("palao", `"দেব না" বাটন ধরতে আমার ${bn(tries)} বার লেগেছে, তারপরও ৳২০০ জরিমানা 😤 তুমি কয়বারে পারো?`,
+    { kicker: "পালাও চ্যালেঞ্জ", title: `${bn(tries)} বার চেষ্টার পর মুক্তি`, rows: [["পালানোর জরিমানা", tk(200)], ["মোট পালিয়েছি", bn(S.escapes) + " বার"]], big: "পেছনে তাকাও, ভাই দাঁড়িয়ে আছে।", stamp: "পলাতক" });
+}
+shareBar("palao", "চাঁদা না দেওয়ার বাটনটা ধরতে পারো কিনা দেখো। আমি পারিনি 😩");
+
+/* ---------- 7. govt ---------- */
+const EXCUSE = ["স্যার চা খেতে গেছেন", "স্যার মিটিংয়ে, মিটিংটা কোথায় কেউ জানে না", "সার্ভার ডাউন, ২০১৯ থেকে", "ফাইলে সই আছে, সিল নেই", "সিল আছে, যিনি সিল দেন তিনি ছুটিতে", "নামের বানানে একটা 'ি' বেশি", "ফাইল পাশের টেবিলে, পাশের টেবিল অন্য বিল্ডিংয়ে"];
+$("#fForm").onsubmit = e => {
+  e.preventDefault(); const f = ($("#fName").value || "ফাইল").slice(0, 40);
+  const yrs = rnd(2, 9), pr = (Math.random() * 3).toFixed(1), tbl = rnd(3, 47), ex = pick(EXCUSE), speed = rnd(200, 2000);
+  const o = $("#fOut"); o.innerHTML = `<b></b><br>অবস্থান: টেবিল নং ${bn(tbl)}<br>কারণ: ${ex}<div class="pbar"><i style="width:${pr}%"></i></div>অগ্রগতি ${pr.replace(/\d/g, d => BN[d])}% · আনুমানিক সময় ${bn(yrs)} বছর<br>দ্রুত করতে চাইলে "স্পিড মানি" ${tk(speed)}`;
+  o.querySelector("b").textContent = "ফাইল: " + f; badge("file");
+  shareBar("sarkar", `আমার "${f}" ফাইল এখন টেবিল নং ${bn(tbl)}-এ। কারণ: ${ex}। আনুমানিক সময় ${bn(yrs)} বছর 🙃`,
+    { kicker: "ফাইল ট্র্যাকার", title: `"${f}" এখন কোথায়?`, rows: [["অবস্থান", "টেবিল " + bn(tbl)], ["কারণ: " + ex], ["অগ্রগতি", pr.replace(/\d/g, d => BN[d]) + "%"], ["আনুমানিক সময়", bn(yrs) + " বছর"]], stamp: "বিবেচনাধীন" });
+};
+$("#bulbBtn").onclick = () => {
+  const on = Math.random() < .22; $("#bulb").classList.toggle("on", on);
+  if (!on) { S.outages++; save(); }
+  $("#bOut").textContent = on ? "আছে! জলদি মোবাইল চার্জ দাও, ৩ মিনিট সময়।" : pick(["নেই। ট্রান্সফরমার বিশ্রামে আছে।", "নেই। লোড ম্যানেজমেন্ট চলছে, ম্যানেজ করছে তোমাকে।", "নেই। বিল কিন্তু ঠিকই আসবে।"]) + ` আজ পর্যন্ত লোডশেডিং: ${bn(S.outages)} বার`;
+};
+const WINNERS = ["ভাইয়ের শালার কোম্পানি (আবারো)", "গতকাল খোলা 'মেসার্স সব পারি এন্টারপ্রাইজ'", "একমাত্র আবেদনকারী, যিনি বিজয়ীও", "যে কোম্পানির অফিস একটা মোবাইল নম্বর"];
+const WORKS = ["৩০০ মিটার রাস্তা", "একটা যাত্রী ছাউনি", "ড্রেনের ঢাকনা ১২টা", "পার্কের একটা বেঞ্চ"];
+$("#tBtn").onclick = () => {
+  const w = pick(WORKS), b = rnd(5, 90), r = rnd(2, 4);
+  $("#tOut").innerHTML = `কাজ: ${w}<br>বাজেট: ${bn(b)} কোটি টাকা<br>বিজয়ী: <b>${pick(WINNERS)}</b><br>সময়সীমা: ${bn(r)} মাস, সম্ভাব্য বাস্তব সময়: ${bn(r * 7)} মাস`;
+};
+const VIP = ["রাস্তা বন্ধ সকাল ৮টা থেকে ভিআইপি আসা পর্যন্ত। ভিআইপি এখনো ঘুমাচ্ছেন।", "ভিআইপি চলে গেছেন ২ ঘণ্টা আগে। রাস্তা খোলার অর্ডার এখনো আসেনি।", "আজ রাস্তা খোলা! কারণ রাস্তাটাই খুঁড়ে রাখা হয়েছে।", "বিকল্প রাস্তা: হেঁটে যান। হাঁটার রাস্তাও বন্ধ।"];
+$("#vBtn").onclick = () => { $("#vOut").textContent = pick(VIP) + ` আনুমানিক অপেক্ষা: ${bn(rnd(1, 5))} ঘণ্টা ${bn(rnd(1, 59))} মিনিট।`; };
+shareBar("sarkar", "সরকারি অফিসে না গিয়েও ঝামেলা উপভোগ করো 🙃");
+
+/* ---------- 8. board ---------- */
+const AREAS = [["গলি নং ৪২", 18450], ["পুরোনো পানির ট্যাংকের মোড়", 15200], ["তিনতলা মার্কেটের পেছন", 11980], ["নতুন রাস্তার শেষ মাথা", 8300], ["ক্লাবঘরের পাশের বাড়ি", 5120], ["বটতলা", 2740]];
+function renderBoard() {
+  const rows = AREAS.map(a => ({ n: a[0], v: a[1] })).concat([{ n: "তুমি", v: S.paid, you: true }]).sort((a, b) => b.v - a.v);
+  $("#board").innerHTML = `<thead><tr><th>র‍্যাঙ্ক</th><th>পাড়া</th><th class="n">এই সপ্তাহের চাঁদা</th></tr></thead><tbody>${rows.map((r, i) => `<tr class="${r.you ? "you" : ""}"><td>${bn(i + 1)}</td><td>${r.n}</td><td class="n">${tk(r.v)}</td></tr>`).join("")}</tbody>`;
+  $("#badges").innerHTML = Object.entries(BADGES).map(([k, b]) => `<div class="badge ${S.badges.includes(k) ? "got" : ""}"><b>${b[0]}</b>${b[1]}</div>`).join("");
+}
+
+/* ---------- global taunts ---------- */
+const realTitle = document.title;
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) document.title = "ভাই তোমাকে খুঁজছে 👀";
+  else { document.title = realTitle; toast("ফিরে এসেছ? অন্য ট্যাবে পালানোর জরিমানা ৳৩০।"); pay(30); }
+});
+let idleT; const IDLE = ["ভাই দেখছে তুমি কিছু করছ না। অলস ট্যাক্স ৳২০।", "এত চুপচাপ? চুপ থাকার চার্জ ৳২০।", "স্ক্রিন দেখে দেখে ভাবছো পালাবে? ৳২০ যোগ হলো।"];
+const resetIdle = () => { clearTimeout(idleT); idleT = setTimeout(() => { if (!document.hidden && $("#call").hidden) { toast(pick(IDLE)); pay(20); } resetIdle(); }, 45000); };
+["pointerdown", "keydown", "scroll"].forEach(ev => addEventListener(ev, resetIdle, { passive: true }));
+resetIdle();
+document.addEventListener("copy", () => { if (!skipCopyTaunt) toast("কপি করলে? কপিরাইট চাঁদা ৳১০।"); });
+$("#resetBtn").onclick = function () {
+  if (this.dataset.armed) { S = blank(); S.last = new Date().toDateString(); save(); renderStats(); renderBoard(); qi = 0; qs = {}; renderQuiz(); this.textContent = "আমার হিসাব মুছে ফেলো"; delete this.dataset.armed; toast("হিসাব মুছে গেছে। ভাই কিন্তু ভোলে না।"); }
+  else { this.dataset.armed = 1; this.textContent = "নিশ্চিত? আবার চাপো"; }
+};
+
+/* ---------- boot ---------- */
+makeReceipt(true); makeNotice(true); renderStats(); renderBoard(); show(startTab);
+})();
+</script>

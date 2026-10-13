@@ -1,0 +1,352 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
+
+import 'theme.dart';
+
+/// Replace with the public web URL once deployed.
+const appLink = 'https://claude.ai/artifact/W48XVug36cdRCWfUcfAQ8Q';
+
+final messengerKey = GlobalKey<ScaffoldMessengerState>();
+
+void toast(String msg) {
+  final m = messengerKey.currentState;
+  if (m == null) return;
+  m.hideCurrentSnackBar();
+  m.showSnackBar(SnackBar(
+    content: Text(msg, style: body(15, w: FontWeight.w600)),
+    duration: const Duration(milliseconds: 3600),
+    behavior: SnackBarBehavior.floating,
+    margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+  ));
+}
+
+/// Hard-shadow "street sign" card.
+class BhaiCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets padding;
+  const BhaiCard({super.key, required this.child, this.padding = const EdgeInsets.all(18)});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: p.surface,
+        border: Border.all(color: p.ink, width: 2),
+        borderRadius: BorderRadius.circular(4),
+        boxShadow: [BoxShadow(color: p.ink, offset: const Offset(5, 5))],
+      ),
+      child: child,
+    );
+  }
+}
+
+class CardTitle extends StatelessWidget {
+  final String title;
+  final String? tag;
+  final String? lede;
+  const CardTitle(this.title, {super.key, this.tag, this.lede});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Wrap(spacing: 10, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+        Text(title, style: body(22, w: FontWeight.w700, h: 1.25)),
+        if (tag != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+            decoration: BoxDecoration(color: p.yellow, borderRadius: BorderRadius.circular(3)),
+            child: Text(tag!, style: body(12, w: FontWeight.w700, color: p.yellowInk)),
+          ),
+      ]),
+      if (lede != null) ...[
+        const SizedBox(height: 4),
+        Text(lede!, style: body(15, color: p.muted)),
+      ],
+      const SizedBox(height: 14),
+    ]);
+  }
+}
+
+enum BtnKind { yellow, red, green, ghost }
+
+class BhaiButton extends StatelessWidget {
+  final String label;
+  final VoidCallback? onTap;
+  final BtnKind kind;
+  const BhaiButton(this.label, {super.key, required this.onTap, this.kind = BtnKind.yellow});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    final (bg, fg) = switch (kind) {
+      BtnKind.yellow => (p.yellow, p.yellowInk),
+      BtnKind.red => (p.red, p.redInk),
+      BtnKind.green => (p.green, p.greenInk),
+      BtnKind.ghost => (p.surface, p.ink),
+    };
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          decoration: BoxDecoration(
+            color: bg,
+            border: Border.all(color: p.ink, width: 2),
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [BoxShadow(color: p.ink, offset: const Offset(3, 3))],
+          ),
+          child: Text(label, style: body(16, w: FontWeight.w700, color: fg)),
+        ),
+      ),
+    );
+  }
+}
+
+class OutBox extends StatelessWidget {
+  final Widget child;
+  final Color? accent;
+  const OutBox({super.key, required this.child, this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: p.paper,
+        border: Border(left: BorderSide(color: accent ?? p.green, width: 4)),
+      ),
+      child: child,
+    );
+  }
+}
+
+// ---------------------------------------------------------------- share ---
+
+class ShareCardData {
+  final String kicker, title;
+  final List<(String, String?)> rows;
+  final String? big, stamp;
+  const ShareCardData({
+    required this.kicker,
+    required this.title,
+    this.rows = const [],
+    this.big,
+    this.stamp,
+  });
+}
+
+/// Text + image share buttons shown under a result.
+class ShareBar extends StatelessWidget {
+  final String text;
+  final ShareCardData? card;
+  const ShareBar({super.key, required this.text, this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Wrap(spacing: 10, runSpacing: 10, children: [
+        if (card != null)
+          BhaiButton('ছবি কার্ড বানাও', kind: BtnKind.red, onTap: () => showShareCard(context, card!, text)),
+        BhaiButton('কপি', kind: BtnKind.ghost, onTap: () => copyText(text)),
+        BhaiButton('শেয়ার', kind: BtnKind.green, onTap: () => shareText(text)),
+      ]),
+    );
+  }
+}
+
+Future<void> copyText(String text) async {
+  await Clipboard.setData(ClipboardData(text: '$text\n$appLink'));
+  toast('কপি হয়েছে। এবার বন্ধুদের গ্রুপে ছাড়ো।');
+}
+
+Future<void> shareText(String text) async {
+  try {
+    await SharePlus.instance.share(ShareParams(text: '$text\n$appLink'));
+  } catch (_) {
+    await copyText(text);
+  }
+}
+
+/// Renders the [RepaintBoundary] behind [key] to PNG bytes. [pixelRatio] 3
+/// turns a 360-wide widget into a 1080-wide image.
+Future<Uint8List?> capturePng(GlobalKey key, {double pixelRatio = 3}) async {
+  final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+  if (boundary == null) return null;
+  final img = await boundary.toImage(pixelRatio: pixelRatio);
+  final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+  return bytes?.buffer.asUint8List();
+}
+
+/// Captures the widget behind [key] and opens the system share sheet with it.
+/// Throws if the image could not be made or shared.
+Future<void> shareKeyAsPng(GlobalKey key, String text, {double pixelRatio = 3}) async {
+  final png = await capturePng(key, pixelRatio: pixelRatio);
+  if (png == null) throw StateError('no image');
+  await SharePlus.instance.share(ShareParams(
+    text: '$text\n$appLink',
+    files: [XFile.fromData(png, mimeType: 'image/png', name: 'chada-bazar.png')],
+  ));
+}
+
+void showShareCard(BuildContext context, ShareCardData data, String text) {
+  showDialog<void>(
+    context: context,
+    builder: (_) => _ShareCardDialog(data: data, text: text),
+  );
+}
+
+class _ShareCardDialog extends StatefulWidget {
+  final ShareCardData data;
+  final String text;
+  const _ShareCardDialog({required this.data, required this.text});
+
+  @override
+  State<_ShareCardDialog> createState() => _ShareCardDialogState();
+}
+
+class _ShareCardDialogState extends State<_ShareCardDialog> {
+  final _key = GlobalKey();
+  bool _busy = false;
+
+  Future<void> _share() async {
+    setState(() => _busy = true);
+    try {
+      await shareKeyAsPng(_key, widget.text); // 360x450 -> 1080x1350
+    } catch (_) {
+      toast('ছবি শেয়ার হয়নি। লেখাটা কপি করে নিলাম।');
+      await copyText(widget.text);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    return Dialog(
+      backgroundColor: p.surface,
+      insetPadding: const EdgeInsets.all(16),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(14),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SizedBox(
+            width: (MediaQuery.sizeOf(context).width - 64).clamp(200.0, 360.0),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: RepaintBoundary(key: _key, child: ShareCardView(data: widget.data)),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Wrap(spacing: 10, runSpacing: 10, alignment: WrapAlignment.center, children: [
+            BhaiButton(_busy ? 'অপেক্ষা…' : 'ছবি শেয়ার করো', kind: BtnKind.red, onTap: _busy ? null : _share),
+            BhaiButton('লেখা কপি', kind: BtnKind.ghost, onTap: () => copyText(widget.text)),
+            BhaiButton('বন্ধ করো', kind: BtnKind.ghost, onTap: () => Navigator.pop(context)),
+          ]),
+        ]),
+      ),
+    );
+  }
+}
+
+/// The 4:5 image. Always light, so it looks identical wherever it is shared.
+class ShareCardView extends StatelessWidget {
+  final ShareCardData data;
+  const ShareCardView({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    const p = Palette.light;
+    return SizedBox(
+      width: 360,
+      height: 450,
+      child: Stack(children: [
+        Container(color: p.paper),
+        Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Container(
+            height: 70,
+            color: p.red,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(children: [
+              Text('চাঁদা বাজার', style: display(34, color: p.yellow)),
+              const Spacer(),
+              Text(data.kicker, style: body(11, w: FontWeight.w600, color: Colors.white)),
+            ]),
+          ),
+          Container(
+            height: 8,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFF7C600), Color(0xFF1C1A16), Color(0xFFF7C600), Color(0xFF1C1A16)],
+                stops: [0, .33, .66, 1],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(22, 18, 22, 8),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(data.title, style: body(23, w: FontWeight.w700, color: p.ink, h: 1.25)),
+                const SizedBox(height: 6),
+                Container(width: 48, height: 3, color: p.red),
+                const SizedBox(height: 12),
+                for (final r in data.rows)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 5),
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Expanded(child: Text(r.$1, style: body(13.5, color: const Color(0xFF3A362C), h: 1.35))),
+                      if (r.$2 != null) ...[
+                        const SizedBox(width: 10),
+                        Text(r.$2!, style: body(14, w: FontWeight.w700, color: p.ink)),
+                      ],
+                    ]),
+                  ),
+                if (data.big != null) ...[
+                  const SizedBox(height: 8),
+                  Text(data.big!, style: body(17, w: FontWeight.w700, color: p.green, h: 1.3)),
+                ],
+                const Spacer(),
+              ]),
+            ),
+          ),
+          Container(
+            height: 52,
+            color: p.green,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('তোমারটা বানাও: চাঁদা বাজার ২.০', style: body(13.5, w: FontWeight.w700, color: p.greenInk, h: 1.2)),
+              Text('ব্যঙ্গ ও বিনোদন। সব চরিত্র কাল্পনিক। আসল চাঁদাবাজি অপরাধ।', style: body(9, color: p.greenInk, h: 1.2)),
+            ]),
+          ),
+        ]),
+        if (data.stamp != null)
+          Positioned(
+            right: 22,
+            bottom: 74,
+            child: Transform.rotate(
+              angle: -0.25,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFB3122B), width: 3),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(data.stamp!, style: body(19, w: FontWeight.w700, color: const Color(0xFFB3122B))),
+              ),
+            ),
+          ),
+      ]),
+    );
+  }
+}
