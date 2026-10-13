@@ -26,6 +26,18 @@ Android needs the SDK licences accepted once: `flutter doctor --android-licenses
 - Replace the placeholder Android signing (the release build currently uses the debug key) before uploading to the Play Store.
 - Add a real `og:image` and `og:url` to `web/index.html` so links preview well on Facebook and WhatsApp.
 
+## Logo and splash
+
+The logo is a yellow taka coin on red. To change it:
+
+```bash
+flutter test tool/gen_icon_test.dart        # redraws assets/icon/*.png (Windows, uses the Nirmala font)
+dart run flutter_launcher_icons             # Android launcher and web icons
+dart run flutter_native_splash:create       # Android and web splash screens
+```
+
+You can also replace `assets/icon/icon.png` (1024x1024, full bleed) and `assets/icon/icon_foreground.png` (transparent, keep the artwork inside the centre 66%) with your own art and run the last two commands.
+
 ## Two perspectives
 
 On first launch the app asks who you are. The choice can be changed any time from the two pills in the header.
