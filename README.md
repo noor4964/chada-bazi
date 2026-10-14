@@ -8,8 +8,8 @@ Pick the file that matches your phone. Most phones from the last few years need 
 
 | Phone | File |
 |---|---|
-| Most modern phones (64-bit) | [chada-bazar-v1.0.0-arm64-v8a.apk](https://github.com/noor4964/chada-bazi/raw/main/releases/chada-bazar-v1.0.0-arm64-v8a.apk) |
-| Older phones (32-bit) | [chada-bazar-v1.0.0-armeabi-v7a.apk](https://github.com/noor4964/chada-bazi/raw/main/releases/chada-bazar-v1.0.0-armeabi-v7a.apk) |
+| Most modern phones (64-bit) | [chada-bazar-v1.1.0-arm64-v8a.apk](https://github.com/noor4964/chada-bazi/raw/main/releases/chada-bazar-v1.1.0-arm64-v8a.apk) |
+| Older phones (32-bit) | [chada-bazar-v1.1.0-armeabi-v7a.apk](https://github.com/noor4964/chada-bazi/raw/main/releases/chada-bazar-v1.1.0-armeabi-v7a.apk) |
 
 To install: open the downloaded file and allow "install from unknown sources" when Android asks. The app is signed with a debug key and is not on the Play Store, so Play Protect may show a warning.
 
