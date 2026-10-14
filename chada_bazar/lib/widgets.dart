@@ -5,10 +5,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'share_card.dart';
 import 'theme.dart';
 
+export 'share_card.dart';
+
 /// Replace with the public web URL once deployed.
-const appLink = 'https://claude.ai/artifact/W48XVug36cdRCWfUcfAQ8Q';
+const appLink = 'https://github.com/noor4964/chada-bazi';
 
 final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -133,19 +136,6 @@ class OutBox extends StatelessWidget {
 
 // ---------------------------------------------------------------- share ---
 
-class ShareCardData {
-  final String kicker, title;
-  final List<(String, String?)> rows;
-  final String? big, stamp;
-  const ShareCardData({
-    required this.kicker,
-    required this.title,
-    this.rows = const [],
-    this.big,
-    this.stamp,
-  });
-}
-
 /// Text + image share buttons shown under a result.
 class ShareBar extends StatelessWidget {
   final String text;
@@ -217,13 +207,19 @@ class _ShareCardDialog extends StatefulWidget {
 }
 
 class _ShareCardDialogState extends State<_ShareCardDialog> {
+  // Remembered for the session so the next card opens in the last chosen look.
+  static CardStyle _lastStyle = CardStyle.sticker;
+  static bool _lastStory = false;
+
   final _key = GlobalKey();
   bool _busy = false;
+  CardStyle _style = _lastStyle;
+  bool _story = _lastStory;
 
   Future<void> _share() async {
     setState(() => _busy = true);
     try {
-      await shareKeyAsPng(_key, widget.text); // 360x450 -> 1080x1350
+      await shareKeyAsPng(_key, widget.text); // 360x450 -> 1080x1350, or 360x640 -> 1080x1920
     } catch (_) {
       toast('ছবি শেয়ার হয়নি। লেখাটা কপি করে নিলাম।');
       await copyText(widget.text);
@@ -241,11 +237,32 @@ class _ShareCardDialogState extends State<_ShareCardDialog> {
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(14),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Wrap(spacing: 6, runSpacing: 6, alignment: WrapAlignment.center, children: [
+            for (final s in CardStyle.values)
+              ChoiceChip(
+                label: Text(s.label, style: body(14, w: FontWeight.w700, color: _style == s ? p.yellowInk : p.ink)),
+                selected: _style == s,
+                selectedColor: p.yellow,
+                backgroundColor: p.surface,
+                side: BorderSide(color: p.ink, width: 1.5),
+                showCheckmark: false,
+                onSelected: (_) => setState(() => _style = _lastStyle = s),
+              ),
+            ChoiceChip(
+              label: Text(_story ? '৯:১৬ স্টোরি' : '৪:৫ পোস্ট', style: body(14, w: FontWeight.w700, color: p.ink)),
+              selected: false,
+              backgroundColor: p.surface,
+              side: BorderSide(color: p.ink, width: 1.5, strokeAlign: BorderSide.strokeAlignInside),
+              avatar: Icon(Icons.swap_vert_rounded, size: 18, color: p.ink),
+              onSelected: (_) => setState(() => _story = _lastStory = !_story),
+            ),
+          ]),
+          const SizedBox(height: 12),
           SizedBox(
             width: (MediaQuery.sizeOf(context).width - 64).clamp(200.0, 360.0),
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: RepaintBoundary(key: _key, child: ShareCardView(data: widget.data)),
+              child: RepaintBoundary(key: _key, child: ShareCardView(data: widget.data, style: _style, story: _story)),
             ),
           ),
           const SizedBox(height: 14),
@@ -256,97 +273,6 @@ class _ShareCardDialogState extends State<_ShareCardDialog> {
           ]),
         ]),
       ),
-    );
-  }
-}
-
-/// The 4:5 image. Always light, so it looks identical wherever it is shared.
-class ShareCardView extends StatelessWidget {
-  final ShareCardData data;
-  const ShareCardView({super.key, required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    const p = Palette.light;
-    return SizedBox(
-      width: 360,
-      height: 450,
-      child: Stack(children: [
-        Container(color: p.paper),
-        Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Container(
-            height: 70,
-            color: p.red,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(children: [
-              Text('চাঁদা বাজার', style: display(34, color: p.yellow)),
-              const Spacer(),
-              Text(data.kicker, style: body(11, w: FontWeight.w600, color: Colors.white)),
-            ]),
-          ),
-          Container(
-            height: 8,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFF7C600), Color(0xFF1C1A16), Color(0xFFF7C600), Color(0xFF1C1A16)],
-                stops: [0, .33, .66, 1],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(22, 18, 22, 8),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(data.title, style: body(23, w: FontWeight.w700, color: p.ink, h: 1.25)),
-                const SizedBox(height: 6),
-                Container(width: 48, height: 3, color: p.red),
-                const SizedBox(height: 12),
-                for (final r in data.rows)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Expanded(child: Text(r.$1, style: body(13.5, color: const Color(0xFF3A362C), h: 1.35))),
-                      if (r.$2 != null) ...[
-                        const SizedBox(width: 10),
-                        Text(r.$2!, style: body(14, w: FontWeight.w700, color: p.ink)),
-                      ],
-                    ]),
-                  ),
-                if (data.big != null) ...[
-                  const SizedBox(height: 8),
-                  Text(data.big!, style: body(17, w: FontWeight.w700, color: p.green, h: 1.3)),
-                ],
-                const Spacer(),
-              ]),
-            ),
-          ),
-          Container(
-            height: 52,
-            color: p.green,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('তোমারটা বানাও: চাঁদা বাজার ২.০', style: body(13.5, w: FontWeight.w700, color: p.greenInk, h: 1.2)),
-              Text('ব্যঙ্গ ও বিনোদন। সব চরিত্র কাল্পনিক। আসল চাঁদাবাজি অপরাধ।', style: body(9, color: p.greenInk, h: 1.2)),
-            ]),
-          ),
-        ]),
-        if (data.stamp != null)
-          Positioned(
-            right: 22,
-            bottom: 74,
-            child: Transform.rotate(
-              angle: -0.25,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFB3122B), width: 3),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(data.stamp!, style: body(19, w: FontWeight.w700, color: const Color(0xFFB3122B))),
-              ),
-            ),
-          ),
-      ]),
     );
   }
 }

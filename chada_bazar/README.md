@@ -47,6 +47,10 @@ On first launch the app asks who you are. The choice can be changed any time fro
 | Tabs | খাতা, রসিদ, ফাঁসাও, কুইজ, আরও (কল, নেতার ভাগ, দরকষাকষি, পালাও, সরকারি, লিডারবোর্ড) | এলাকা, দপ্তর, মাইক, ভাগ, তালিকা |
 | Idea | Survive bhai, keep a real private ledger | Run a made-up neighbourhood; the leader above takes 10% of everything; police attention ends the run |
 
+### Share cards
+
+Every "ছবি কার্ড বানাও" button opens a preview with three looks (স্টিকার, নিয়ন, Y2K) and two sizes (4:5 post, 9:16 story). Each card gets a "POV:" caption and floating emoji stickers chosen from its kicker (`povFor` and `stickersFor` in `lib/share_card.dart`). To give a new feature its own caption, add its kicker word to the table in `povFor`. The link printed on every card and added to shared text is `appLink` in `lib/widgets.dart`.
+
 ### Shareable features
 
 | Feature | Side | What gets shared |
