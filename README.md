@@ -17,4 +17,3 @@ To install: open the downloaded file and allow "install from unknown sources" wh
 
 - `chada_bazar/` is the Flutter app. See [chada_bazar/README.md](chada_bazar/README.md) for how to run, build and where each feature lives.
 - `chada-bazar-v2.html` is the original single-page prototype.
-- `chada-app-context.md` has the project notes and ideas.
